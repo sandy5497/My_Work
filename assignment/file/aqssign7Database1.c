@@ -1,0 +1,184 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+static int flag;
+static int cnt=0;
+
+void printMenu(void)
+{
+	puts("**********************MENU**************************");
+	puts("----------------------------------------------------");
+	puts("		a. ADD RECORD");
+	puts("		p. PRINT RECORD");
+	puts("		d. DELETE RECORD");
+	puts("		s. SORT RECORD");
+	puts("		f. FIND RECORD");
+	puts("		r. REVERSE RECORD");
+	puts("		S. SAVE RECORD");
+	puts("		e. EDIT RECORD");
+	puts("  	q. QUITE MENU");
+	puts("-----------------------------------------------------");
+	puts("ENTER YOURS CHOICE");
+	return ;
+}
+
+void saveRec(char (*p)[20])
+{
+	int i,j;
+	FILE *fp;
+	fp=fopen("NAMES.DAT","w");
+	for(i=0;i<cnt;i++)
+	{
+		fputs(p[i],fp);
+		fputc(10,fp);
+	}
+	flag=0;
+}
+
+
+void *addRec(char (*p)[20])
+{
+	p=realloc(p,(cnt+1)*sizeof(*p));
+	puts("enter name to add");
+	gets(p[cnt]);
+	cnt++;
+	flag=1;
+	return p;
+}
+void printRec(char (*p)[20])
+{
+	int i;
+	for(i=0;i<cnt;i++){	printf("%2d :",i);
+				puts(p[i]);}
+	
+}
+void *deleteRec(char (*p)[20])
+{
+	int i;
+	puts("enter index to delete");
+	scanf("%d",&i);
+	if((i<-1)||(i>=cnt)){puts("ERROR:invalid input");
+				printf("use 0 to %d\n",cnt-1);
+				return p;}
+	if(i==(cnt-1))goto lable;
+	memmove(p[i],p[i+1],(cnt-i)*sizeof (*p));
+lable:	cnt--;
+	p=realloc(p,(cnt)*sizeof(*p));
+	__fpurge(stdin);
+	flag=1;
+	return p;
+}
+void sortRec(char (*p)[20])
+{
+	int i,j;char temp[20];
+	for(i=cnt-1;i>0;i--)
+	{
+		for(j=0;j<i;j++)
+		{
+			if(strcmp(p[j],p[j+1])>0)
+			{
+				strcpy(temp,p[j]);
+				strcpy(p[j],p[j+1]);
+				strcpy(p[j+1],temp);
+			}
+		}
+	}
+	flag=1;
+}
+
+void findRec(char (*p)[20])
+{
+	int i;char find[20];
+	puts("enter name to be find");
+	gets(find);
+	for(i=0;i<cnt;i++)
+	{
+		if(strcmp(p[i],find)==0){printf("name found on %d position\n",i);
+					return ;
+					}
+	}
+	puts("name not found,enter again");
+	flag=1;
+	return;
+}
+void reverseRec(char (*p)[20])
+{
+	int i,j;char temp[20];
+	for(i=0,j=cnt-1;i<j;i++,j--)
+	{
+		strcpy(temp,p[i]);
+		strcpy(p[i],p[j]);
+		strcpy(p[j],temp);
+	}
+	flag=1;
+}
+void editRec(char (*p)[20])
+{
+	int i;
+	puts("enter the number postioning name to be edit");
+	scanf("%d",&i);
+	__fpurge(stdin);
+	if((i<-1)||(i>=cnt)){puts("ERROR:invalid input");
+				printf("use 0 to %d\n",cnt-1);
+				return;}
+	puts("enter update name");
+	gets(p[i]);
+	flag=1;
+}
+
+char *syncData(void)
+{
+	char (*p)[20]=NULL;
+	FILE *fp;
+	int i=0;
+	char temp[20];
+	fp=fopen("NAMES.DAT","r");
+	if(fp==NULL)
+	{
+		puts("ERROR:no file found");
+		exit(0);
+	}
+	while(fgets(temp,20,fp))
+	{
+		temp[strlen(temp)-1]=0;
+		p=realloc(p,(cnt+1)*20);
+		strcpy(p[cnt],temp);
+		cnt++;
+	}
+	fclose(fp);
+	return p;
+}
+
+int main()
+{
+	char ch;char (*db)[20]=syncData();
+	while(1)
+	{
+	printMenu();
+	scanf("%c",&ch);
+	__fpurge(stdin);
+	switch(ch)
+	{
+		case 'a':db=addRec(db);break;
+		case 'p':printRec(db);break;
+		case 'd':db=deleteRec(db);break;
+		case 's':sortRec(db);break;
+		case 'f':findRec(db);break;
+		case 'S':saveRec(db);break;
+		case 'r':reverseRec(db);break;
+		case 'e':editRec(db);break;
+		case 'q':if(flag==0)exit(0);
+				 else
+				 {
+					 puts("DO YOU WANT TO SAVE DATA");
+					 puts(" 'y' OR 'n'");
+					 scanf("%ch",&ch);
+					 if(ch=='y'){saveRec(db);exit(0);}
+					 else exit(0);
+				 }
+		default:puts("INVALID INPUT,ENTER PROPER CHOICE");
+	}
+	}return 0;
+}
+
